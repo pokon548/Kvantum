@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Pedram Pourang (aka Tsu Jan) 2014-2023 <tsujan2000@gmail.com>
+ * Copyright (C) Pedram Pourang (aka Tsu Jan) 2014-2024 <tsujan2000@gmail.com>
  *
  * Kvantum is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -107,6 +107,18 @@ void Style::drawBg(QPainter *p, const QWidget *widget) const
   }
   int dh = sspec.incrementH ? sspec.minH : qMax(sspec.minH - bgndRect.height(), 0);
   int dw = sspec.incrementW ? sspec.minW : qMax(sspec.minW - bgndRect.width(), 0);
+
+#if (QT_VERSION >= QT_VERSION_CHECK(6,8,0))
+  /* NOTE: This is a workaround for artifacts under Wayland. */
+  if (!tspec_.isX11)
+  {
+    auto origMode = p->compositionMode();
+    p->setCompositionMode(QPainter::CompositionMode_Clear);
+    p->fillRect(bgndRect, Qt::transparent);
+    p->setCompositionMode(origMode);
+  }
+#endif
+
   if (!renderInterior(p,bgndRect.adjusted(0,0,dw,dh),fspec,ispec,ispec.element+suffix))
   { // no window interior element but with reduced translucency
     p->fillRect(bgndRect, standardPalette().color(suffix.contains(KL1("-inactive"))
